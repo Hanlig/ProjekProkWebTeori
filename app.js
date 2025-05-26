@@ -1,5 +1,27 @@
 angular.module('absensiApp', [])
-    .controller('AbsensiController', function($scope) {
+    .run(function($rootScope) {
+        // Data awal daftar hadir disimpan di $rootScope
+        $rootScope.daftar = [
+            { 
+                nama: 'Cara', 
+                nim: '71251022', 
+                matkul: 'Pemrograman Web', 
+                waktu: new Date().toLocaleString(), 
+                editing: false 
+            },
+            { 
+                nama: 'Vin', 
+                nim: '71251023', 
+                matkul: 'Pemrograman Web', 
+                waktu: new Date().toLocaleString(), 
+                editing: false 
+            }
+        ];
+
+        // Tambahkan properti 'selected' pada setiap item di daftar
+        $rootScope.daftar = $rootScope.daftar.map(item => ({ ...item, selected: false }));
+    })
+    .controller('AbsensiController', function($scope, $rootScope) {
         // Data pengguna untuk login
         const users = [
             { username: 'admin', password: '1234', role: 'admin' },
@@ -50,24 +72,6 @@ angular.module('absensiApp', [])
             $scope.loginError = '';
         };
 
-        // Data awal daftar hadir
-        $scope.daftar = [
-            { 
-                nama: 'Cara', 
-                nim: '71251022', 
-                matkul: 'Pemrograman Web', 
-                waktu: new Date().toLocaleString(), 
-                editing: false 
-            },
-            { 
-                nama: 'Vin', 
-                nim: '71251023', 
-                matkul: 'Pemrograman Web', 
-                waktu: new Date().toLocaleString(), 
-                editing: false 
-            }
-        ];
-
         // Fungsi tambah nama ke daftar hadir
         $scope.tambahNama = function() {
             // Bersihkan pesan error sebelumnya
@@ -84,19 +88,27 @@ angular.module('absensiApp', [])
                 return;
             }
 
+            // Validasi NIM hanya boleh angka dan harus tepat 8 digit
+            const nimRegex = /^\d{8}$/; // NIM must be exactly 8 digits
+            if (!nimRegex.test(nim)) {
+                $scope.errorMsg = 'NIM harus terdiri dari tepat 8 angka.';
+                return;
+            }
+
             // Cek duplikasi NIM
-            if ($scope.daftar.some(item => item.nim === nim)) {
+            if ($rootScope.daftar.some(item => item.nim === nim)) {
                 $scope.errorMsg = 'NIM sudah terdaftar!';
                 return;
             }
 
             // Tambah data baru ke daftar
-            $scope.daftar.push({
+            $rootScope.daftar.push({
                 nama: nama,
                 nim: nim,
                 matkul: matkul,
                 waktu: new Date().toLocaleString(),
-                editing: false
+                editing: false,
+                selected: false // Inisialisasi properti 'selected'
             });
 
             // Reset form setelah berhasil menambah data
@@ -107,11 +119,35 @@ angular.module('absensiApp', [])
             };
         };
 
-        // Fungsi hapus nama dari daftar
-        $scope.hapusNama = function(index) {
-            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-                $scope.daftar.splice(index, 1);
+        // Fungsi pilih semua data dengan toggle
+        $scope.selectAll = function() {
+            const allSelected = $rootScope.daftar.every(item => item.selected);
+            $rootScope.daftar.forEach(item => item.selected = !allSelected);
+        };
+
+        // Fungsi hapus semua data dengan validasi dan pemberitahuan
+        $scope.hapusSemuaData = function() {
+            const allSelected = $rootScope.daftar.every(item => item.selected);
+            if (!allSelected) {
+                alert('Tidak bisa menghapus semua data karena ada yang belum dicentang.');
+                return;
             }
+
+            if (confirm('Apakah Anda yakin ingin menghapus semua data?')) {
+                $rootScope.daftar = [];
+            }
+        };
+
+        // Fungsi hapus data yang dicentang
+        $scope.hapusDipilih = function() {
+            $rootScope.daftar = $rootScope.daftar.filter(item => !item.selected);
+        };
+
+        // Update the function to use $rootScope.daftar instead of $scope.daftar
+        $scope.hapusData = function() {
+            $rootScope.daftar = $rootScope.daftar.filter(function(item) {
+                return !item.selected;
+            });
         };
 
         // Fungsi toggle edit mode
@@ -135,7 +171,7 @@ angular.module('absensiApp', [])
             let csv = 'No,Nama,NIM,Mata Kuliah,Waktu Hadir\n';
             
             // Loop data dan tambahkan ke CSV
-            $scope.daftar.forEach((item, i) => {
+            $rootScope.daftar.forEach((item, i) => {
                 csv += `${i + 1},"${item.nama}","${item.nim}","${item.matkul}","${item.waktu}"\n`;
             });
 

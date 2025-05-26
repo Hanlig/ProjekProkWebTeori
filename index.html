@@ -69,7 +69,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th ng-click="sortBy('#')">#</th>
+                        <th>Pilih</th>
                         <th ng-click="sortBy('nama')">Nama</th>
                         <th ng-click="sortBy('nim')">NIM</th>
                         <th ng-click="sortBy('matkul')">Mata Kuliah</th>
@@ -79,7 +79,7 @@
                 </thead>
                 <tbody>
                     <tr ng-repeat="item in daftar | orderBy:sortKey:reverse track by $index">
-                        <td>{{$index + 1}}</td>
+                        <td><input type="checkbox" ng-model="item.selected"></td>
                         <td>
                             <span ng-show="!item.editing">{{item.nama}}</span>
                             <input ng-show="item.editing" type="text" ng-model="item.nama">
@@ -97,13 +97,24 @@
                             <button class="btn btn-primary" ng-click="toggleEdit(item)">
                                 {{item.editing ? 'Simpan' : 'Edit'}}
                             </button>
-                            <button class="btn btn-danger" ng-click="hapusNama($index)" ng-show="userRole === 'admin'">Hapus</button>
                         </td>
                     </tr>
                 </tbody>
             </table>
 
-            <div style="margin-top: 20px;">
+            <!-- Remove the 'Pilih Semua' and 'Hapus Data' buttons for users -->
+            <div style="margin-top: 20px;" ng-if="userRole === 'admin'">
+                <button class="btn btn-success" ng-click="downloadCSV()">
+                    📥 Download CSV
+                </button>
+                <button class="btn btn-secondary" ng-click="selectAll()">
+                    Pilih Semua
+                </button>
+                <button class="btn btn-danger" ng-click="hapusData()">
+                    Hapus Data
+                </button>
+            </div>
+            <div style="margin-top: 20px;" ng-if="userRole === 'user'">
                 <button class="btn btn-success" ng-click="downloadCSV()">
                     📥 Download CSV
                 </button>
