@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id" ng-app="absensiApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Hadir Mahasiswa</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body ng-controller="AbsensiController" ng-class="{'dark-mode': isDarkMode}">
+    <div class="container">
+        <!-- Login Form -->
+        <div ng-show="!isLoggedIn" class="login-container">
+            <h2>Login Sistem Absensi</h2>
+            <div class="form-group">
+                <label>Username:</label>
+                <input type="text" ng-model="loginData.username" placeholder="Masukkan username">
+            </div>
+            <div class="form-group">
+                <label>Password:</label>
+                <input type="password" ng-model="loginData.password" placeholder="Masukkan password">
+            </div>
+            <button class="btn btn-primary" ng-click="login()">Login</button>
+            <div ng-show="loginError" class="error">{{loginError}}</div>
+            <div style="margin-top: 20px; font-size: 12px; color: #718096;">
+                <p>Demo Account:</p>
+                <p>Admin: admin / 1234</p>
+                <p>User: user / 1234</p>
+            </div>
+        </div>
+
+        <!-- Main Application -->
+        <div ng-show="isLoggedIn" class="main-container">
+            <div class="header">
+                <h1>Daftar Hadir Mahasiswa</h1>
+                <div class="user-info">
+                    <span>Selamat datang, {{userRole}}!</span>
+                    <label class="toggle-container">
+                        <input type="checkbox" ng-model="isDarkMode" class="toggle-input">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span>🌙 Mode Gelap</span>
+                    <button class="btn btn-secondary" ng-click="logout()">Keluar</button>
+                </div>
+            </div>
+
+            <!-- Form Input -->
+            <div class="form-row">
+                <div>
+                    <label>Nama:</label>
+                    <input type="text" ng-model="formData.nama" placeholder="Masukkan nama">
+                </div>
+                <div>
+                    <label>NIM:</label>
+                    <input type="text" ng-model="formData.nim" placeholder="Masukkan NIM">
+                </div>
+                <div>
+                    <label>Mata Kuliah:</label>
+                    <input type="text" ng-model="formData.matkul" placeholder="Masukkan mata kuliah">
+                </div>
+                <div>
+                    <button class="btn btn-primary" ng-click="tambahNama()">Tambah</button>
+                </div>
+            </div>
+
+            <div ng-show="errorMsg" class="error">{{errorMsg}}</div>
+
+            <!-- Table -->
+            <table>
+                <thead>
+                    <tr>
+                        <th ng-click="sortBy('#')">#</th>
+                        <th ng-click="sortBy('nama')">Nama</th>
+                        <th ng-click="sortBy('nim')">NIM</th>
+                        <th ng-click="sortBy('matkul')">Mata Kuliah</th>
+                        <th ng-click="sortBy('waktu')">Waktu Hadir</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="item in daftar | orderBy:sortKey:reverse track by $index">
+                        <td>{{$index + 1}}</td>
+                        <td>
+                            <span ng-show="!item.editing">{{item.nama}}</span>
+                            <input ng-show="item.editing" type="text" ng-model="item.nama">
+                        </td>
+                        <td>
+                            <span ng-show="!item.editing">{{item.nim}}</span>
+                            <input ng-show="item.editing" type="text" ng-model="item.nim">
+                        </td>
+                        <td>
+                            <span ng-show="!item.editing">{{item.matkul}}</span>
+                            <input ng-show="item.editing" type="text" ng-model="item.matkul">
+                        </td>
+                        <td>{{item.waktu}}</td>
+                        <td class="actions">
+                            <button class="btn btn-primary" ng-click="toggleEdit(item)">
+                                {{item.editing ? 'Simpan' : 'Edit'}}
+                            </button>
+                            <button class="btn btn-danger" ng-click="hapusNama($index)" ng-show="userRole === 'admin'">Hapus</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="margin-top: 20px;">
+                <button class="btn btn-success" ng-click="downloadCSV()">
+                    📥 Download CSV
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
